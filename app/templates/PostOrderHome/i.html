@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Home</title>
+	<link rel="stylesheet" href="{% static 'PO_Home/i.css' %}">
+</head>
+<body class="websiteBody">
+	<div class="container">
+		<div class="navbar">
+			<div class="title"><a  style="text-decoration: none;color:white;" href="/home">RotiNextDoor</a></div>
+			
+			<div class="image">
+				<img src="{% static 'Home-V0/assets/images/Ellipse_18.png' %}" class="q5">
+            	<img src="{% static 'Home-V0/assets/images/Vector.png' %}"class="q9">
+            	<img src="{% static 'Home-V0/assets/images/Vector_1.png' %}"class="q10">
+			</div>
+			
+			<div class="search">
+				<form id="l" action="/pin-filter">
+				<select class="s_input" name="search">
+				<option>Select your area</option>
+				{% for i in allpin %}
+				<option onclick="myFunction()">{{i.pincode}}</option>
+				{% endfor%}
+				</select>
+				</form>
+			</div>
+		</div>
+		<div class="cat">Popular Categories</div>
+		
+
+		<div class="slideshow-container">
+			{% for i in cat %}
+				{% if forloop.counter0|divisibleby:3 %}
+		    	<a href="#{{i.pop_categroy_name}}"><div id="catt" class="mySlides">
+		    		<!-- Peach -->
+		    		<div class="blur" style="background-color:rgba(245, 213, 30, 0.20000000298023224);"></div>
+	    			<img class="imgg" src="{{i.photo.url}}">
+	    			<div class="p"><p id="get" class="text1" style="color: black;">{{i.pop_categroy_name}}</p></div>
+				</div></a>
+				{% elif forloop.counter0|add:-2|divisibleby:3 %}
+				<a href="#{{i.pop_categroy_name}}"><div id="catt" class="mySlides">
+					<!-- Blue -->
+					<div class="blur" style="background-color: rgba(250, 84, 86, 0.20000000298023224);"></div>
+				 	<img class="imgg" src="{{i.photo.url}}">
+	    			<div class="p"><p id="get" class="text1" style="color: black;">{{i.pop_categroy_name}}</p></div>
+				</div></a>
+				{% else %}
+				<a href="#{{i.pop_categroy_name}}"><div id="catt" class="mySlides">
+					<!-- Pink -->
+					<div class="blur" style="background-color:rgba(1, 180, 187, 0.20000000298023224);"></div>
+				  	<img class="imgg" src="{{i.photo.url}}">
+	    			<div class="p"><p id="get" class="text1" style="color: black;">{{i.pop_categroy_name}}</p></div>
+				</div></a>
+				{% endif %}
+			{% endfor %}
+	    </div>
+
+
+	    <div class="cat1">Featured Dishes</div>
+	    <div id="ro" class="row">
+	    	{% for i in alldish %}
+			<div class="column">
+	    		<a id='a' style="text-decoration:none;" href="dish/{{i.dishID}}">
+			    	<img id="im" src="{{i.dishPhotos.url}}">
+			    	<p id="p1" class="text" style="margin-top:5px;margin-bottom: 0px;">{{i.dishName}}</p>
+			    	<p id="p2" class="text" style="margin-top:2px;margin-bottom: 10px;">{{i.cook.kitchenName}}</p>
+				</a>
+			</div>
+		    {% endfor %}
+	    </div>
+	    <a href="/track"><div class="track">
+	    	<div class="tr">Track Your Order</div>
+	    </div></a>
+	</div>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		var cat = '';
+		$('.mySlides').click(function(){
+			cat = $(this).text();
+			cat = cat.replace(/\s+/g, ' ').trim();
+			
+			$.ajax({
+				type:'GET',
+				url: `/filter/${cat}`,
+				success: function (data){
+					const parent = document.getElementById("ro")
+					while (parent.firstChild) {
+						parent.firstChild.remove()
+					}
+					for (var i = 0; i < data['dish'].length; i++) {
+						
+						var id = data['dish'][i]['dishID']
+						var photo = data['dish'][i]['dishPhotos']
+						var name = data['dish'][i]['dishName']
+						var cook_id = data['dish'][i]['cook_id']  
+						var kitchen = data['cook']
+						var index = 0;
+						for (var j = 0; j < kitchen.length; j++) {
+							if(kitchen[j][0]['id'] == cook_id){
+								index = i;
+							}
+						}
+						kitchen = data['cook'][index][0]['kitchenName']
+						var element = document.createElement("div")
+						element.classList.add("column")
+						
+						var aTag = document.createElement('a');
+						aTag.setAttribute('href',`/dish/${id}`);
+						aTag.setAttribute('style',`text-decoration:none`);
+						var img = document.createElement('img')
+						img.src = `/media/${photo}`
+						
+						aTag.appendChild(img);
+						
+						var p1 = document.createElement('p');
+						p1.classList.add("text");
+						p1.setAttribute('style', "margin-top:5px;margin-bottom: 0px;");
+						var textnode = document.createTextNode(name);
+						p1.appendChild(textnode);
+
+						var p2 = document.createElement('p');
+						p2.classList.add('text');
+						p2.setAttribute('style', "margin-top:5px;margin-bottom: 0px;");
+						var textnode = document.createTextNode(kitchen);
+						p2.appendChild(textnode);
+
+						aTag.appendChild(p1);
+						aTag.appendChild(p2);
+
+						element.appendChild(aTag);
+						var row = document.getElementById("ro")
+						row.appendChild(element)
+					}
+				}});
+		});
+	</script>
+	<script>
+		function myFunction() {document.getElementById("l").submit();}
+	</script>
+</body>
+</html>
